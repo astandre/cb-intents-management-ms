@@ -12,7 +12,7 @@ def _quit(signal, frame):
 def main():
     app = create_app()
     host = app.config.get('host', '0.0.0.0')
-    port = app.config.get('port', 5000)
+    port = app.config.get('port', 5001)
     debug = app.config.get('DEBUG', False)
 
     signal.signal(signal.SIGINT, _quit)
