@@ -41,27 +41,27 @@ def intent_answer():
                 "status": 405}
 
 
-@intents.route("/entity/options", methods=["GET"])
-def entity_options():
+@intents.route("/intent/options", methods=["GET"])
+def intent_options():
     """
     Entity
     """
     if request.method == "GET":
         data = request.get_json()
-        return {"type": "Curso", "options": ["Option1", "Option1", "Option1"]}
+        return kg.get_intent_options(data["intent"])
     else:
         return {"message": "method not allowed here",
                 "status": 405}
 
 
-@intents.route("/entity/", methods=["GET"])
-def get_entity():
+@intents.route("/entity/options", methods=["GET"])
+def entity_options():
     """
     Entity isntance
     """
     if request.method == "GET":
         data = request.get_json()
-        return {"entity": "entity", "property": "value"}
+        return kg.get_entity_options(data["entity"])
     else:
         return {"message": "method not allowed here",
                 "status": 405}

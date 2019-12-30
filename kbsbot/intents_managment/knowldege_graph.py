@@ -1,6 +1,7 @@
 import rdflib
 import os
 from rdflib import URIRef, Namespace
+from rdflib.namespace import RDF, RDFS
 
 
 class KGHandler:
@@ -8,6 +9,18 @@ class KGHandler:
     BASE_URL = "http://127.0.0.1"
     RESOURCE_URI = f"{BASE_URL}/ockb/resources/"
     ONTOLOGY_URI = f"{BASE_URL}/ockb/ontology/"
+
+    pf_has_rq = Namespace(ONTOLOGY_URI + "hasResolutionQuestion")
+    pf_question = Namespace(ONTOLOGY_URI + "hasQuestion")
+    pf_resolves = Namespace(ONTOLOGY_URI + "resolves")
+    pf_option = Namespace(ONTOLOGY_URI + "hasOption")
+    pf_answer = Namespace(ONTOLOGY_URI + "hasAnswer")
+    pf_requires = Namespace(ONTOLOGY_URI + "requiresEntity")
+    pf_ans_prop = Namespace(ONTOLOGY_URI + "answerProperty")
+    pf_refers_to = Namespace(ONTOLOGY_URI + "refersTo")
+    pf_template = Namespace(ONTOLOGY_URI + "answerTemplate")
+    pf_ans_from = Namespace(ONTOLOGY_URI + "answerFrom")
+    pf_requires = Namespace(ONTOLOGY_URI + "requiresEntity")
 
     def __init__(self):
         try:
@@ -17,16 +30,19 @@ class KGHandler:
         except Exception as e:
             print(e)
 
-    def _build_intent_uri(self, intent):
-        if not isinstance(intent, Namespace):
-            return Namespace(self.RESOURCE_URI + intent)
+    def _build_uri(self, uri):
+        if not isinstance(uri, Namespace):
+            if "http" in uri:
+                return URIRef(uri)
+            else:
+                return Namespace(self.RESOURCE_URI + uri)
         else:
-            return intent
+            return uri
 
     def get_intent_requirements(self, intent):
-        intent = self._build_intent_uri(intent)
-        requires = Namespace(self.ONTOLOGY_URI + "requiresEntity")
-        query = "SELECT ?entity WHERE {<" + intent + "> <" + requires + "> ?entity}"
+        intent = self._build_uri(intent)
+
+        query = "SELECT ?entity WHERE {<" + intent + "> <" + self.pf_requires + "> ?entity}"
 
         qres = self.grafo.query(query)
         requires = []
@@ -57,30 +73,25 @@ class KGHandler:
         return answer
 
     def get_answer(self, intent):
-        intent = self._build_intent_uri(intent)
-        answer = Namespace(self.ONTOLOGY_URI + "hasAnswer")
-        requires = Namespace(self.ONTOLOGY_URI + "requiresEntity")
-        ans_prop = Namespace(self.ONTOLOGY_URI + "answerProperty")
-        refers_to = Namespace(self.ONTOLOGY_URI + "refersTo")
-        template = Namespace(self.ONTOLOGY_URI + "answerTemplate")
-        ans_from = Namespace(self.ONTOLOGY_URI + "answerFrom")
+        intent = self._build_uri(intent)
+
         query = f"""SELECT ?property ?refers ?template ?from ?entity
                           WHERE {{
-                                  <{intent}> <{answer}> ?answer .
+                                  <{intent}> <{self.pf_answer}> ?answer .
                                   OPTIONAL {{
-                                  ?answer <{ans_prop}> ?property .
+                                  ?answer <{self.pf_ans_prop}> ?property .
                                   }}
                                   OPTIONAL {{
-                                  ?answer <{refers_to}> ?refers .
+                                  ?answer <{self.pf_refers_to}> ?refers .
                                   }}
                                   OPTIONAL {{
-                                  ?answer <{template}> ?template .
+                                  ?answer <{self.pf_template}> ?template .
                                   }} 
                                   OPTIONAL {{
-                                  ?answer <{ans_from}> ?from .
+                                  ?answer <{self.pf_ans_from}> ?from .
                                   }}
                                   OPTIONAL {{
-                                  <{intent}> <{requires}> ?entity .
+                                  <{intent}> <{self.pf_requires}> ?entity .
                                   }}
                       }}"""
         qres = self.grafo.query(query)
@@ -156,28 +167,57 @@ class KGHandler:
         answer = self.build_answer(qres, ans_prop)
         return {"answer": answer, "template": str(template)}
 
-#     TODO handle when no answer is configured
+    def get_intent_options(self, intent):
+        intent = self._build_uri(intent)
+
+        # TODO handle custom options
+        query = f"""SELECT ?question ?option ?resolves
+                          WHERE {{
+                                  <{intent}> <{self.pf_has_rq}> ?rq .
+                                  OPTIONAL {{
+                                  ?rq <{self.pf_question}> ?question .
+                                  }}
+                                  OPTIONAL {{
+                                  ?rq <{self.pf_resolves}> ?resolves .
+                                  ?option_thing  <{RDF.type}>  ?resolves .
+                                  ?option_thing <{RDFS.label}> ?option  .
+                                  }}
+                      }}"""
+
+        q_res = self.grafo.query(query)
+
+        options = []
+        for row in q_res:
+            # print(row)
+            question, option, resolves = row
+            if option is not None and resolves is not None:
+                options.append({"type": str(resolves), "value": str(option)})
+
+        return {"intent": str(intent), "question": str(question), "options": options}
+
+    def get_entity_options(self, entity):
+        entity = self._build_uri(entity)
+        # TODO handle custom options                                                  
+        query = f"""SELECT ?option                               
+                          WHERE {{                                                    
+                                  ?option_thing  <{RDF.type}>  <{entity}> .            
+                                  ?option_thing <{RDFS.label}> ?option  .                                                    
+                      }}"""
+        q_res = self.grafo.query(query)
+
+        options = []
+        for row in q_res:
+            option = row
+            if option is not None:
+                options.append(str(option[0]))
+
+        return {"entity": str(entity), "options": options}
+
+
+
+
 # TODO handle multi properties in answer
 # TODO write tests with this information
-# kg = KGHandler()
-# print(kg.get_intent_answer("ObtenerInformacion", [
-#     {"type": "http://127.0.0.1/ockb/resources/Course", "value": "http://127.0.0.1/ockb/resources/EAIG5"}]))
-
-# print(kg.get_intent_answer("ObtenerFechas", [
-#     {"type": "http://127.0.0.1/ockb/resources/Course", "value": "http://127.0.0.1/ockb/resources/EAIG5"}]))
-
-# print(kg.get_intent_answer("ObtenerFechasInicio", [
-#     {"type": "http://127.0.0.1/ockb/resources/Course", "value": "http://127.0.0.1/ockb/resources/EAIG5"}]))
-# print(kg.get_intent_answer("ObtenerPrerequisitos", [
-#     {"type": "http://127.0.0.1/ockb/resources/Course", "value": "http://127.0.0.1/ockb/resources/EAIG5"}]))
-# print(kg.get_intent_answer("ObtenerDuracion", [
-#     {"type": "http://127.0.0.1/ockb/resources/Course", "value": "http://127.0.0.1/ockb/resources/EAIG5"}]))
-# print(kg.get_intent_answer("ObtenerPrecio", [
-#     {"type": "http://127.0.0.1/ockb/resources/Course", "value": "http://127.0.0.1/ockb/resources/EAIG5"}]))
-
-# print(kg.get_intent_answer("ObtenerDocente", [
-#     {"type": "http://127.0.0.1/ockb/resources/Course", "value": "http://127.0.0.1/ockb/resources/EAIG5"}]))
-# print(kg.get_intent_answer("ObtenerContenidos", [
-#     {"type": "http://127.0.0.1/ockb/resources/Course", "value": "http://127.0.0.1/ockb/resources/EAIG5"}]))
-# print(kg.get_intent_answer("listarCursos", [
-#     {"type": "http://127.0.0.1/ockb/resources/Course", "value": "http://127.0.0.1/ockb/resources/EAIG5"}]))
+kg = KGHandler()
+# print(kg.get_options("ObtenerInformacion"))
+# print(kg.get_entity_options("http://127.0.0.1/ockb/course/ontology/Course"))
