@@ -1,11 +1,7 @@
 Intents-Managment
 =================
 
-This microservice is  intended to extract structured information from raw text, to identify intents and entities for KBS bot.
-
-This microservice requires to be populated with information of Agents and their Models, as follows.
-
-
+This microservice is to identify the requirements of an intent, provide options to complete information and return answer if the intent is completed.
 
 Check also th API description here:
 

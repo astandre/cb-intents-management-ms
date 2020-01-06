@@ -48,7 +48,11 @@ def intent_options():
     """
     if request.method == "GET":
         data = request.get_json()
-        return kg.get_intent_options(data["intent"])
+        result = kg.get_intent_options(data["intent"])
+        if result is not None:
+            return result
+        else:
+            return {"message": "Intent not valid", "status": 404}
     else:
         return {"message": "method not allowed here",
                 "status": 405}
@@ -65,3 +69,5 @@ def entity_options():
     else:
         return {"message": "method not allowed here",
                 "status": 405}
+
+# TODO handle emtpy dicts

@@ -12,4 +12,3 @@ def create_app(settings=None):
 
     app = _create_app(blueprints=blueprints, settings=settings)
     return app
-

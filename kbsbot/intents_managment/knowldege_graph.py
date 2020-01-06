@@ -2,11 +2,13 @@ import rdflib
 import os
 from rdflib import URIRef, Namespace
 from rdflib.namespace import RDF, RDFS
+import configparser
 
 
 class KGHandler:
-    # TODO add this url to settings.ini
-    BASE_URL = "http://127.0.0.1"
+    config = configparser.ConfigParser()
+    config.read(os.path.dirname(__file__) + '/settings.ini')
+    BASE_URL = config['kg']['BASE_URL']
     RESOURCE_URI = f"{BASE_URL}/ockb/resources/"
     ONTOLOGY_URI = f"{BASE_URL}/ockb/ontology/"
 
@@ -24,25 +26,29 @@ class KGHandler:
 
     def __init__(self):
         try:
-            path = os.path.dirname(__file__) + "/kg.rdf"
+            path = os.path.dirname(__file__) + "/" + self.config['kg']['KB_URL']
             self.grafo = rdflib.Graph()
             self.grafo.parse(path, format="xml")
         except Exception as e:
             print(e)
 
-    def _build_uri(self, uri):
+    def _build_uri(self, uri, resource=True):
         if not isinstance(uri, Namespace):
             if "http" in uri:
                 return URIRef(uri)
             else:
-                return Namespace(self.RESOURCE_URI + uri)
+                if resource:
+                    return Namespace(self.RESOURCE_URI + uri)
+                else:
+                    return Namespace(self.ONTOLOGY_URI + uri)
         else:
             return uri
 
     def get_intent_requirements(self, intent):
         intent = self._build_uri(intent)
 
-        query = "SELECT ?entity WHERE {<" + intent + "> <" + self.pf_requires + "> ?entity}"
+        query = f"""SELECT ?entity WHERE {{ 
+                                    <{intent}> <{self.pf_requires}> ?entity}}"""
 
         qres = self.grafo.query(query)
         requires = []
@@ -97,7 +103,7 @@ class KGHandler:
         qres = self.grafo.query(query)
         if len(qres) >= 1:
             for row in qres:
-                print(row)
+                # print(row)
                 ans_prop, refers_to, template, ans_from, entity = row
                 break
             return ans_prop, refers_to, template, ans_from, entity
@@ -123,7 +129,7 @@ class KGHandler:
             # print("Direct answer")
             ans_from = Namespace(ans_from)
             if refers_to is not None:
-                print("Referred Answer")
+                # print("Referred Answer")
                 refers_to = Namespace(refers_to)
                 # print(refers_to)
                 query = f"""SELECT ?answer  WHERE {{
@@ -131,13 +137,13 @@ class KGHandler:
                                     ?related <{ans_prop}> ?answer.
                                                    }}"""
             else:
-                print("Not referred Answer")
+                # print("Not referred Answer")
                 query = f"""SELECT ?answer WHERE {{
                                     <{ans_from}> <{ans_prop}> ?answer
                                                     }}"""
 
         else:
-            print("Not direct answer")
+            # print("Not direct answer")
             entity_value = None
             for entity_iter in entities:
                 aux_type = Namespace(entity_iter["type"])
@@ -148,13 +154,13 @@ class KGHandler:
             if entity_value is not None:
                 entity_value = Namespace(entity_value)
                 if refers_to is None:
-                    print("Not referred answer")
+                    # print("Not referred answer")
                     query = f"""SELECT ?answer WHERE {{
                                             <{entity_value}> <{ans_prop}> ?answer
                                                        }}"""
 
                 else:
-                    print("Referred answer")
+                    # print("Referred answer")
                     refers_to = Namespace(refers_to)
                     query = f"""SELECT ?answer WHERE {{
                                         <{entity_value}> <{refers_to}>  ?related .
@@ -187,16 +193,20 @@ class KGHandler:
         q_res = self.grafo.query(query)
 
         options = []
+        question = None
         for row in q_res:
             # print(row)
             question, option, resolves = row
             if option is not None and resolves is not None:
                 options.append({"type": str(resolves), "value": str(option)})
-
-        return {"intent": str(intent), "question": str(question), "options": options}
+        if question is None:
+            return None
+        else:
+            return {"intent": str(intent), "question": str(question), "options": options}
 
     def get_entity_options(self, entity):
-        entity = self._build_uri(entity)
+        entity = self._build_uri(entity, resource=False)
+        # print(entity)
         # TODO handle custom options                                                  
         query = f"""SELECT ?option                               
                           WHERE {{                                                    
@@ -212,8 +222,6 @@ class KGHandler:
                 options.append(str(option[0]))
 
         return {"entity": str(entity), "options": options}
-
-
 
 
 # TODO handle multi properties in answer
