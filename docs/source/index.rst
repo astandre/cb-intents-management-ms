@@ -1,7 +1,7 @@
 Intents-Managment
 =================
 
-This microservice is to identify the requirements of an intent, provide options to complete information and return answer if the intent is completed.
+This microservice is used to identify the requirements of an intent, provide options to complete information and return answer if the intent is completed.
 
 Check also th API description here:
 
@@ -9,6 +9,7 @@ Check also th API description here:
    :maxdepth: 2
 
    api
+   kg
 
 Check also the TODO lis for this project:
 

@@ -6,6 +6,11 @@ import configparser
 
 
 class KGHandler:
+    """
+    KGHandler is the main class of this project.
+    It is used to connect to the knowledge base, an retrieve information for intents.
+
+    """
     config = configparser.ConfigParser()
     config.read(os.path.dirname(__file__) + '/settings.ini')
     BASE_URL = config['kg']['BASE_URL']
@@ -33,6 +38,16 @@ class KGHandler:
             print(e)
 
     def _build_uri(self, uri, resource=True):
+        """
+        This method builds an URI from a complete URL or just the URI name.
+        This method also checks if the uri is well structured.
+
+        :param uri: the URI or full URL
+
+        :param resource: If the URI is from the ontology or a resource
+
+        :return: The namespace of the full URI
+        """
         if not isinstance(uri, Namespace):
             if "http" in uri:
                 return URIRef(uri)
@@ -45,6 +60,13 @@ class KGHandler:
             return uri
 
     def get_intent_requirements(self, intent):
+        """
+        This method returns all required entities of an intent.
+
+        :param intent: The intent from where required entities will ne retrieved.
+
+        :return: a list of the required entities.
+        """
         intent = self._build_uri(intent)
 
         query = f"""SELECT ?entity WHERE {{ 
@@ -60,6 +82,13 @@ class KGHandler:
 
     @staticmethod
     def clean_uri(uri):
+        """
+        This method is used to remove the URL part of the URI to return the clean property.
+
+        :param uri: The URI to be cleaned
+
+        :return: The clean property from the URI
+        """
         uri = str(uri)
         if uri.find('#') != -1:
             special_char = '#'
@@ -69,7 +98,15 @@ class KGHandler:
         return uri[index + 1:len(uri)]
 
     def build_answer(self, qres, ans_prop):
-        # TODO handle multiple properties
+        """
+        This method builds a part of the answer, from the result of a SPARQL query.
+        :param qres: The result from a SPARQL query.
+
+        :param ans_prop: The property intended to an answer.
+
+        :return: A dict containing a property and a value from the query result.
+        """
+        # TODO handle multiple properties answer
         answer = []
         ans_prop = self.clean_uri(ans_prop)
         values = []
@@ -79,6 +116,15 @@ class KGHandler:
         return answer
 
     def get_answer(self, intent):
+        """
+        This method retrieves the answer class from a SPAQL query.
+        The answer has a series of properties that may or may not be present,
+        depending on the way the answer is configured
+
+        :param intent: The intent from where the answer will be retrieved
+
+        :return: returns the different properties found in the answer object.
+        """
         intent = self._build_uri(intent)
 
         query = f"""SELECT ?property ?refers ?template ?from ?entity
@@ -110,10 +156,15 @@ class KGHandler:
 
     def get_intent_answer(self, intent, entities):
         """
+        This method returns the full answer from a intent.
+        Depending on the different properties found in the answer object.
+        The answer can be from a direct object, or an indirect object or, from a related object.
 
-        :param intent: an intent
-        :param entities: A list of entities
-        :return:
+        :param intent: The intent from where the answer will be retrieved
+
+        :param entities: A list of entities, that can be collected in different ways from other components.
+
+        :return: The full answer in a dictionary displayed in this way:
             {
             'answer': [{
             'property': 'teacherName',
@@ -174,6 +225,14 @@ class KGHandler:
         return {"answer": answer, "template": str(template)}
 
     def get_intent_options(self, intent):
+        """
+        This method returns the options related to an Intent
+        To complete the different entities needed to satisfy an intent.
+
+        :param intent: An intent from where options will be retrieved.
+
+        :return: a dict containing, the resolve question, and the different options.
+        """
         intent = self._build_uri(intent)
 
         # TODO handle custom options
@@ -205,6 +264,13 @@ class KGHandler:
             return {"intent": str(intent), "question": str(question), "options": options}
 
     def get_entity_options(self, entity):
+        """
+        This method returns options to complete an entity.
+
+        :param entity: The entity type from where options will be retrieved
+
+        :return: returns an entity and their options.
+        """
         entity = self._build_uri(entity, resource=False)
         # print(entity)
         # TODO handle custom options                                                  
@@ -222,10 +288,3 @@ class KGHandler:
                 options.append(str(option[0]))
 
         return {"entity": str(entity), "options": options}
-
-
-# TODO handle multi properties in answer
-# TODO write tests with this information
-kg = KGHandler()
-# print(kg.get_options("ObtenerInformacion"))
-# print(kg.get_entity_options("http://127.0.0.1/ockb/course/ontology/Course"))

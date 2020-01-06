@@ -1,6 +1,6 @@
 from flakon import JsonBlueprint
 from flask import request
-from kbsbot.intents_managment.knowldege_graph import KGHandler
+from kbsbot.intents_managment.knowledge_graph import KGHandler
 
 intents = JsonBlueprint("intents", __name__)
 kg = KGHandler()
@@ -9,7 +9,8 @@ kg = KGHandler()
 @intents.route("/intent/requires", methods=["GET"])
 def intent_requires():
     """
-    intent
+
+    :return:
     """
     if request.method == "GET":
         data = request.get_json()

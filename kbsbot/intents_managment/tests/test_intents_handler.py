@@ -1,5 +1,5 @@
 from unittest import TestCase
-from kbsbot.intents_managment.knowldege_graph import KGHandler
+from kbsbot.intents_managment.knowledge_graph import KGHandler
 
 
 class IntentsHandlerTest(TestCase):
