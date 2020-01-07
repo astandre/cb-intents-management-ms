@@ -6,7 +6,6 @@ class IntentsHandlerTest(TestCase):
     def setUp(self):
         self.kg = KGHandler()
 
-    #  TODO write tests
     def test_not_direct_answer(self):
         answer = self.kg.get_intent_answer("ObtenerInformacion", [
             {"type": "http://127.0.0.1/ockb/resources/Course", "value": "http://127.0.0.1/ockb/resources/EAIG5"}])
@@ -46,12 +45,14 @@ class IntentsHandlerTest(TestCase):
         self.assertIn("resources", result)
 
     def test_get_requirements(self):
+        """
+        .. todo:: handle wrong Intent
+        """
         result = self.kg.get_intent_requirements("ObtenerDocente")
         self.assertGreater(len(result["requires"]), 0)
         self.assertIn("ObtenerDocente", result["intent"])
         result = self.kg.get_intent_requirements("listarCursos")
         self.assertEqual(len(result["requires"]), 0)
-        # TODO handle wrong Intent
         # result = self.kg.get_intent_requirements("ObtenerColores")
         # print(result)
 
@@ -71,4 +72,3 @@ class IntentsHandlerTest(TestCase):
         self.assertGreater(len(result["options"]), 0)
         result = self.kg.get_entity_options("Course")
         self.assertEqual(len(result["options"]), 0)
-

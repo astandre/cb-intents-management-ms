@@ -9,8 +9,10 @@ kg = KGHandler()
 @intents.route("/intent/requires", methods=["GET"])
 def intent_requires():
     """
+    This view encapsulates the method get_intent_requirement
+    It requires an Intent.
 
-    :return:
+    :return: A dict containing the different entities required for an Intent
     """
     if request.method == "GET":
         data = request.get_json()
@@ -25,7 +27,12 @@ def intent_requires():
 @intents.route("/intent/answer", methods=["GET"])
 def intent_answer():
     """
-    intent
+    This view encapsulates the method get_intent_answer
+    It requires an Intent.
+
+    :return: a dict containing the answer template and the different parts of the answer
+
+    .. todo:: inform admin when response is None
     """
     if request.method == "GET":
         data = request.get_json()
@@ -33,7 +40,6 @@ def intent_answer():
         if response is not None:
             return response
         else:
-            #         TODO inform admin
             return {"message": "Answer not configured correctly",
                     "status": 404}
 
@@ -45,7 +51,10 @@ def intent_answer():
 @intents.route("/intent/options", methods=["GET"])
 def intent_options():
     """
-    Entity
+    This view encapsulates the method get_intent_options.
+    It requires an Intent.
+
+    :return: A dict containing the different options to complete an Intent
     """
     if request.method == "GET":
         data = request.get_json()
@@ -62,7 +71,12 @@ def intent_options():
 @intents.route("/entity/options", methods=["GET"])
 def entity_options():
     """
-    Entity isntance
+    This method encapsulates the method get_entity_options
+    It requires an Entity.
+
+    :return: a dict containing the different options to complete an Entity type.
+
+    .. todo:: handle emtpy dicts
     """
     if request.method == "GET":
         data = request.get_json()
@@ -70,5 +84,3 @@ def entity_options():
     else:
         return {"message": "method not allowed here",
                 "status": 405}
-
-# TODO handle emtpy dicts

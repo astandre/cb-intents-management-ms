@@ -105,8 +105,10 @@ class KGHandler:
         :param ans_prop: The property intended to an answer.
 
         :return: A dict containing a property and a value from the query result.
+
+        .. todo:: handle multiple properties answer
         """
-        # TODO handle multiple properties answer
+
         answer = []
         ans_prop = self.clean_uri(ans_prop)
         values = []
@@ -232,10 +234,11 @@ class KGHandler:
         :param intent: An intent from where options will be retrieved.
 
         :return: a dict containing, the resolve question, and the different options.
+
+        .. todo:: handle custom options
         """
         intent = self._build_uri(intent)
 
-        # TODO handle custom options
         query = f"""SELECT ?question ?option ?resolves
                           WHERE {{
                                   <{intent}> <{self.pf_has_rq}> ?rq .
@@ -270,10 +273,11 @@ class KGHandler:
         :param entity: The entity type from where options will be retrieved
 
         :return: returns an entity and their options.
+
+        .. todo:: handle custom options
         """
         entity = self._build_uri(entity, resource=False)
         # print(entity)
-        # TODO handle custom options                                                  
         query = f"""SELECT ?option                               
                           WHERE {{                                                    
                                   ?option_thing  <{RDF.type}>  <{entity}> .            
