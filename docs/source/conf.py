@@ -71,3 +71,5 @@ html_theme_options = {
 }
 
 html_logo = "./logoKBS.png"
+
+htmlhelp_basename = 'intents_managment'
