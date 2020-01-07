@@ -1,4 +1,4 @@
-from kbsbot.intents_managment.views.intents import intents
+from .intents import intents
 
 
 blueprints = [intents]
