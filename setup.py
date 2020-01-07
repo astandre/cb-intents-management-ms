@@ -1,5 +1,6 @@
 import sys
 from setuptools import setup, find_packages
+from kbsbot.intents_managment import __version__
 
 
 with open('requirements.txt') as f:
@@ -9,7 +10,7 @@ with open('requirements.txt') as f:
 
 
 setup(name='intents_managment',
-      version="0.1",
+      version=__version__,
       packages=find_packages(),
       zip_safe=False,
       include_package_data=True,
