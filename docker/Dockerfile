@@ -16,7 +16,6 @@ RUN curl -sSL https://openresty.org/download/openresty-1.15.8.1.tar.gz \
 
 ENV PATH "/usr/local/openresty/bin:/usr/local/openresty/nginx/sbin:$PATH"
 
-RUN mkdir /app
 
 COPY docker/circus.ini /app/circus.ini
 COPY docker/nginx.conf /app/nginx.conf

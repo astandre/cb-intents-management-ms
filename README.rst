@@ -13,3 +13,13 @@ Herrera, Andre & Yaguachi, Lady & Piedra, Nelson. (2019). Building Conversationa
 
 .. image:: https://travis-ci.org/astandre/cb-intents-management-ms.svg?branch=master
     :target: https://travis-ci.org/astandre/cb-intents-management-ms
+
+
+Running scripts
+
+
+docker build -t kbsbot.intents_managment . -f docker/Dockerfile
+
+docker run --rm --net=kbsbot --name=intents-managment -v /tmp/logs:/logs -p 5555:8080 -it kbsbot.intents-managment
+
+docker run --rm  --name=intents-managment -v /tmp/logs:/logs -p 8080:8080 -it kbsbot.intents-managment
