@@ -2,6 +2,7 @@ from kbsbot.intents_managment.app import create_app
 import sys
 import signal
 from chaussette.server import make_server
+from werkzeug.serving import run_with_reloader
 import argparse
 
 
@@ -30,6 +31,7 @@ def main(args=sys.argv[1:]):
     signal.signal(signal.SIGTERM, _quit)
 
     def runner():
+        print("Attempting to run")
         if args.fd is not None:
             # use chaussette
             httpd = make_server(app, host='fd://%d' % args.fd)
@@ -40,7 +42,6 @@ def main(args=sys.argv[1:]):
     if not debug:
         runner()
     else:
-        from werkzeug.serving import run_with_reloader
         run_with_reloader(runner)
     # app.run(debug=debug, host=host, port=port, use_reloader=debug)
 
