@@ -7,7 +7,7 @@ with open('requirements.txt') as f:
             and not dep.startswith('-e')]
     install_requires = deps
 
-setup(name='intents_managment',
+setup(name='intents-managment',
       version=__version__,
       packages=find_packages(),
       zip_safe=False,
@@ -15,6 +15,6 @@ setup(name='intents_managment',
       install_requires=install_requires,
       entry_points="""
       [console_scripts]
-      intents_managment = kbsbot.intents_managment.run:main
+      intents-managment = kbsbot.intents_managment.run:main
       """
       )
