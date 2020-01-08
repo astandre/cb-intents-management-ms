@@ -18,8 +18,10 @@ Herrera, Andre & Yaguachi, Lady & Piedra, Nelson. (2019). Building Conversationa
 Running scripts
 
 
-docker build -t kbsbot.intents_managment . -f docker/Dockerfile
+docker build -t kbsbot/intents_managment . -f docker/Dockerfile
 
 docker run --rm --net=kbsbot --name=intents-managment -v /tmp/logs:/logs -p 5555:8080 -it kbsbot.intents-managment
 
 docker run --rm  --name=intents-managment -v /tmp/logs:/logs -p 8080:8080 -it kbsbot.intents-managment
+
+docker run --rm  --name=intents-managment -p 80:8000 -it kbsbot/intents_managment

@@ -1,5 +1,7 @@
 include requirements.txt
 include README.rst
-recursive-include intents_managment *.ini
+include LICENSE
+graft kbsbot/intents_managment/kg.rdf
+recursive-include intents_managment *.ini *.rdf
 recursive-include docs *.rst *.png *.svg *.css *.html conf.py
 prune docs/build/*
