@@ -1,4 +1,4 @@
-from kbsbot.intents_managment.app import create_app
+from .app import create_app
 import sys
 import signal
 from chaussette.server import make_server
