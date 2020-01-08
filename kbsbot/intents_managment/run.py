@@ -2,7 +2,6 @@ from kbsbot.intents_managment.app import create_app
 import sys
 import signal
 from chaussette.server import make_server
-from werkzeug.serving import run_with_reloader
 import argparse
 
 
@@ -36,13 +35,14 @@ def main(args=sys.argv[1:]):
             httpd = make_server(app, host='fd://%d' % args.fd)
             httpd.serve_forever()
         else:
-            app.run(debug=debug, host=host, port=port, use_reloader=debug)
+            app.run(debug=debug, host=host, port=port)
 
     if not debug:
         runner()
     else:
+        from werkzeug.serving import run_with_reloader
         run_with_reloader(runner)
-    app.run(debug=debug, host=host, port=port, use_reloader=debug)
+    # app.run(debug=debug, host=host, port=port, use_reloader=debug)
 
 
 if __name__ == "__main__":

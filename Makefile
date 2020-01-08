@@ -23,8 +23,7 @@ test_dependencies:
 	$(BIN)/pip install flake8 tox
 
 test: build test_dependencies
-	$(BIN)/flake8 myservice
 	$(BIN)/tox
 
 run:
-	FLASK_APP=myservice bin/flask run
+	FLASK_APP=intents_managment bin/flask run
