@@ -12,5 +12,3 @@ RUN pip install /app/
 WORKDIR /app/kbsbot/intents_managment
 EXPOSE 8000
 CMD ["gunicorn", "-b", "0.0.0.0:8000", "run:app"]
-#CMD ["gunicorn", "-b", "0.0.0.0:8000", "app/kbsbot/intents_managment/run:gunicorn_app"]
-

@@ -1,10 +1,6 @@
 Intents-Managment
 =================
 
-This microservice is used to identify the requirements of an intent, provide options to complete information and return answer if the intent is completed.
-
-This project is part of the architecture described in:
-Herrera, Andre & Yaguachi, Lady & Piedra, Nelson. (2019). Building Conversational Interface for Customer Support Applied to Open Campus an Open Online Course Provider. 11-13. 10.1109/ICALT.2019.00011.
 
 
 .. image:: https://readthedocs.org/projects/cb-intents-management-ms/badge/?version=latest
@@ -18,10 +14,8 @@ Herrera, Andre & Yaguachi, Lady & Piedra, Nelson. (2019). Building Conversationa
 Running scripts
 
 
-docker build -t kbsbot/intents_managment . -f docker/Dockerfile
+``docker build -t astandre/kbsbot_intents_managment . -f docker/Dockerfile``
 
-docker run --rm --net=kbsbot --name=intents-managment -v /tmp/logs:/logs -p 5555:8080 -it kbsbot.intents-managment
 
-docker run --rm  --name=intents-managment -v /tmp/logs:/logs -p 8080:8080 -it kbsbot.intents-managment
+``docker run --rm  --name=intents-managment -p 5000:8000 -it astandre/kbsbot_intents_managment``
 
-docker run --rm  --name=intents-managment -p 80:8000 -it kbsbot/intents_managment

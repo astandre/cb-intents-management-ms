@@ -8,3 +8,13 @@ install:
  - pip install tox
 script:
  - tox -e $TOX_ENV
+
+jobs:
+  include:
+    - stage: build docker image
+      script:
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker build -t kbsbot_intents_managment . -f docker/Dockerfile
+      - docker images
+      - docker tag kbsbot_intents_managment $DOCKER_USERNAME/kbsbot_intents_managment
+      - docker push $DOCKER_USERNAME/kbsbot_intents_managment
