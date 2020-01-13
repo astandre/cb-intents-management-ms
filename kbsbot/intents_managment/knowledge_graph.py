@@ -158,7 +158,7 @@ class KGHandler:
                 break
             return ans_prop, refers_to, template, ans_from, entity
 
-    def get_intent_answer(self, intent, entities):
+    def get_intent_answer(self, intent, entities_aux):
         """
         This method returns the full answer from a intent.
         Depending on the different properties found in the answer object.
@@ -177,6 +177,13 @@ class KGHandler:
             }
 
         """
+        intent = self._build_uri(intent)
+        entities = []
+        for entity in entities_aux:
+            entities.append({
+                "type": self._build_uri(entity["type"]),
+                "value": self._build_uri(entity["value"])
+            })
         ans_prop, refers_to, template, ans_from, entity = self.get_answer(intent)
 
         ans_prop = Namespace(ans_prop)
@@ -201,7 +208,7 @@ class KGHandler:
             # print("Not direct answer")
             entity_value = None
             for entity_iter in entities:
-                aux_type = Namespace(entity_iter["type"])
+                aux_type = entity_iter["type"]
                 if aux_type == entity:
                     entity_value = entity_iter["value"]
                     break
