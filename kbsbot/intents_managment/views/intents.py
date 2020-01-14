@@ -14,14 +14,12 @@ def intent_requires():
 
     :return: A dict containing the different entities required for an Intent
     """
-    if request.method == "GET":
-        data = request.get_json()
-        if "intent" not in data:
-            return {"message": "Must provide an intent name", "status": 404}
+
+    data = request.get_json()
+    if "intent" in data:
         return kg.get_intent_requirements(data["intent"])
     else:
-        return {"message": "method not allowed here",
-                "status": 405}
+        return {"message": "Must provide an intent name", "status": 404}
 
 
 @intents.route("/intent/answer", methods=["GET"])
@@ -34,18 +32,18 @@ def intent_answer():
 
     .. todo:: inform admin when response is None
     """
-    if request.method == "GET":
-        data = request.get_json()
+
+    data = request.get_json()
+    if "intent" in data and "entities" in data:
         response = kg.get_intent_answer(data["intent"], data["entities"])
         if response is not None:
             return response
         else:
             return {"message": "Answer not configured correctly",
                     "status": 404}
-
     else:
-        return {"message": "method not allowed here",
-                "status": 405}
+        return {"message": "Must provide an Intent and entities",
+                "status": 404}
 
 
 @intents.route("/intent/options", methods=["GET"])
@@ -56,16 +54,13 @@ def intent_options():
 
     :return: A dict containing the different options to complete an Intent
     """
-    if request.method == "GET":
-        data = request.get_json()
-        result = kg.get_intent_options(data["intent"])
-        if result is not None:
-            return result
-        else:
-            return {"message": "Intent not valid", "status": 404}
+
+    data = request.get_json()
+    result = kg.get_intent_options(data["intent"])
+    if result is not None:
+        return result
     else:
-        return {"message": "method not allowed here",
-                "status": 405}
+        return {"message": "Intent not valid", "status": 404}
 
 
 @intents.route("/entity/options", methods=["GET"])
@@ -78,9 +73,9 @@ def entity_options():
 
     .. todo:: handle emtpy dicts
     """
-    if request.method == "GET":
-        data = request.get_json()
+
+    data = request.get_json()
+    if "entity" in data:
         return kg.get_entity_options(data["entity"])
     else:
-        return {"message": "method not allowed here",
-                "status": 405}
+        return {"message": "Entity not valid", "status": 404}

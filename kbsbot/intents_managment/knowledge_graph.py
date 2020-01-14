@@ -2,7 +2,6 @@ import rdflib
 import os
 from rdflib import URIRef, Namespace
 from rdflib.namespace import RDF, RDFS
-import configparser
 
 
 class KGHandler:
@@ -287,7 +286,7 @@ class KGHandler:
         """
         entity = self._build_uri(entity, resource=False)
         # print(entity)
-        query = f"""SELECT ?option                               
+        query = f"""SELECT ?option_thing ?option                               
                           WHERE {{                                                    
                                   ?option_thing  <{RDF.type}>  <{entity}> .            
                                   ?option_thing <{RDFS.label}> ?option  .                                                    
@@ -296,8 +295,8 @@ class KGHandler:
 
         options = []
         for row in q_res:
-            option = row
-            if option is not None:
-                options.append(str(option[0]))
+            payload, option = row
+            if option is not None and payload is not None:
+                options.append({"option": option, "payload": payload})
 
         return {"entity": str(entity), "options": options}
