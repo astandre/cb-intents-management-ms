@@ -10,10 +10,7 @@ class KGHandler:
     It is used to connect to the knowledge base, an retrieve information for intents.
 
     """
-    # config = configparser.ConfigParser()
-    # config.read(os.path.dirname(__file__) + '/settings.ini')
-    # BASE_URL = config['kg']['BASE_URL']
-    BASE_URL = "http://127.0.0.1"
+    BASE_URL = os.environ.get("BASE_URL")
     RESOURCE_URI = f"{BASE_URL}/ockb/resources/"
     ONTOLOGY_URI = f"{BASE_URL}/ockb/ontology/"
 
@@ -31,8 +28,10 @@ class KGHandler:
 
     def __init__(self):
         try:
-            # path =  "/" + self.config['kg']['KB_URL']
             path = os.path.dirname(__file__) + "/kg.rdf"
+            # print(os.path.dirname(__file__))
+            # path = os.environ.get("KG_URL")
+            # print(path)
             self.grafo = rdflib.Graph()
             self.grafo.parse(path, format="xml")
         except Exception as e:
