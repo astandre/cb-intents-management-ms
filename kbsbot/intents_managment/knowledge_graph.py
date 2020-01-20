@@ -28,9 +28,9 @@ class KGHandler:
 
     def __init__(self):
         try:
-            path = os.path.dirname(__file__) + "/kg.rdf"
+            # path = os.path.dirname(__file__) + "/kg.rdf"
             # print(os.path.dirname(__file__))
-            # path = os.environ.get("KG_URL")
+            path = os.environ.get("KG_URL")
             # print(path)
             self.grafo = rdflib.Graph()
             self.grafo.parse(path, format="xml")

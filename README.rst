@@ -21,5 +21,5 @@ Running scripts
 ``docker build -t astandre/kbsbot_intents_managment . -f docker/Dockerfile``
 
 
-``docker run --rm  --name=intents-managment -p 5000:8000 -it astandre/kbsbot_intents_managment``
+``docker run --rm  --name=intents-managment -p 5002:8002 -it astandre/kbsbot_intents_managment``
 
