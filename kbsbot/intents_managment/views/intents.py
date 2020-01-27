@@ -6,12 +6,12 @@ import os
 intents = JsonBlueprint("intents", __name__)
 
 
-if os.environ.get("DEBUG"):
-    base_url = "http://127.0.0.1"
-    path = "C:\\Users\\andre\\Documents\\PythonTutos\\cb-intents-management-ms\\kbsbot\\intents_managment\\kg.rdf"
-else:
-    base_url = os.environ.get("BASE_URL")
-    path = os.environ.get("KG_URL")
+# if os.environ.get("DEBUG"):
+#     base_url = "http://127.0.0.1"
+#     path = "C:\\Users\\andre\\Documents\\PythonTutos\\cb-intents-management-ms\\kbsbot\\intents_managment\\kg.rdf"
+# else:
+base_url = os.environ.get("BASE_URL")
+path = os.environ.get("KG_URL")
 
 kg = KGHandler(base_url, path)
 
