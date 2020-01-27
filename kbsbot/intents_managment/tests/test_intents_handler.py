@@ -24,10 +24,10 @@ class IntentsHandlerTest(TestCase):
 
         self.assertIn("template", answer)
         self.assertIn("answer", answer)
-        self.assertTrue(len(answer["answer"]) > 1)
-        self.assertEqual(answer["answer"][0]["property"], "courseName")
         self.assertIn("property", answer["answer"][0])
         self.assertIn("value", answer["answer"][0])
+        self.assertTrue(len(answer["answer"][0]["value"]) > 1)
+        self.assertEqual(answer["answer"][0]["property"], "courseName")
         self.assertIsInstance(answer["answer"][0]["value"], list)
 
     def test_related_answer(self):
