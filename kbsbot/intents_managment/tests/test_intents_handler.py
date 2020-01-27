@@ -1,11 +1,14 @@
 from unittest import TestCase
 from kbsbot.intents_managment.knowledge_graph import KGHandler
+import os
 
 
 class IntentsHandlerTest(TestCase):
     def setUp(self):
         base_url = "http://127.0.0.1"
-        path = "../kg.rdf"
+        path = "kbsbot/intents_managment/kg.rdf"
+        # base_url = os.environ.get("BASE_URL")
+        # path = os.environ.get("KG_URL")
         self.kg = KGHandler(base_url, path)
 
     def test_not_direct_answer(self):
