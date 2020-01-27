@@ -11,5 +11,11 @@ def create_app(settings=None):
     if settings is None:
         settings = _SETTINGS
 
+    config = configparser.ConfigParser()
+    config.read(_SETTINGS)
+
+    for key in config["flask"]:
+        os.environ[key] = config["flask"][key]
+
     app = _create_app(blueprints=blueprints, settings=settings)
     return app

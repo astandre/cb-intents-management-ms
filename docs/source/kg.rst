@@ -16,11 +16,13 @@ These are the main methods of this class:
 
 .. autofunction:: knowledge_graph.KGHandler.clean_uri
 
-.. autofunction:: knowledge_graph.KGHandler.build_answer
+.. autofunction:: knowledge_graph.KGHandler.build_answer_prop_val
 
-.. autofunction:: knowledge_graph.KGHandler.get_answer
+.. autofunction:: knowledge_graph.KGHandler.get_answer_properties
 
 .. autofunction:: knowledge_graph.KGHandler.get_intent_answer
+
+.. autofunction:: knowledge_graph.KGHandler.get_answer_parts
 
 .. autofunction:: knowledge_graph.KGHandler.get_intent_options
 

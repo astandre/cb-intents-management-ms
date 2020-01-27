@@ -1,9 +1,19 @@
 from flakon import JsonBlueprint
 from flask import request
 from kbsbot.intents_managment.knowledge_graph import KGHandler
+import os
 
 intents = JsonBlueprint("intents", __name__)
-kg = KGHandler()
+
+
+if os.environ.get("DEBUG"):
+    base_url = "http://127.0.0.1"
+    path = "C:\\Users\\andre\\Documents\\PythonTutos\\cb-intents-management-ms\\kbsbot\\intents_managment\\kg.rdf"
+else:
+    base_url = os.environ.get("BASE_URL")
+    path = os.environ.get("KG_URL")
+
+kg = KGHandler(base_url, path)
 
 
 @intents.route("/intent/requires", methods=["GET"])
@@ -77,5 +87,10 @@ def entity_options():
     data = request.get_json()
     if "entity" in data:
         return kg.get_entity_options(data["entity"])
+    elif "entities" in data:
+        entities = []
+        for entity in data["entities"]:
+            entities.append(kg.get_entity_options(entity))
+        return entities
     else:
         return {"message": "Entity not valid", "status": 404}

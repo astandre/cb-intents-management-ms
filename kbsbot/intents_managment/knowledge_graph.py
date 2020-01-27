@@ -10,30 +10,43 @@ class KGHandler:
     It is used to connect to the knowledge base, an retrieve information for intents.
 
     """
-    BASE_URL = os.environ.get("BASE_URL")
-    RESOURCE_URI = f"{BASE_URL}/ockb/resources/"
-    ONTOLOGY_URI = f"{BASE_URL}/ockb/ontology/"
 
-    pf_has_rq = Namespace(ONTOLOGY_URI + "hasResolutionQuestion")
-    pf_question = Namespace(ONTOLOGY_URI + "hasQuestion")
-    pf_resolves = Namespace(ONTOLOGY_URI + "resolves")
-    pf_option = Namespace(ONTOLOGY_URI + "hasOption")
-    pf_answer = Namespace(ONTOLOGY_URI + "hasAnswer")
-    pf_requires = Namespace(ONTOLOGY_URI + "requiresEntity")
-    pf_ans_prop = Namespace(ONTOLOGY_URI + "answerProperty")
-    pf_refers_to = Namespace(ONTOLOGY_URI + "refersTo")
-    pf_template = Namespace(ONTOLOGY_URI + "answerTemplate")
-    pf_ans_from = Namespace(ONTOLOGY_URI + "answerFrom")
-    pf_requires = Namespace(ONTOLOGY_URI + "requiresEntity")
+    BASE_URL = ""
+    pf_has_rq = ""
+    pf_question = ""
+    pf_resolves = ""
+    pf_option = ""
+    pf_answer = ""
+    pf_requires = ""
+    pf_ans_prop = ""
+    pf_refers_to = ""
+    pf_template = ""
+    pf_ans_from = ""
+    pf_requires = ""
+    RESOURCE_URI = ""
+    ONTOLOGY_URI = ""
 
-    def __init__(self):
+    def __init__(self, base_url, path):
         try:
-            # path = os.path.dirname(__file__) + "/kg.rdf"
-            # print(os.path.dirname(__file__))
-            path = os.environ.get("KG_URL")
-            # print(path)
+            # Setting base URL an properties
+            self.BASE_URL = base_url
+            self.RESOURCE_URI = f"{self.BASE_URL}/ockb/resources/"
+            self.ONTOLOGY_URI = f"{self.BASE_URL}/ockb/ontology/"
+            self.pf_has_rq = Namespace(self.ONTOLOGY_URI + "hasResolutionQuestion")
+            self.pf_question = Namespace(self.ONTOLOGY_URI + "hasQuestion")
+            self.pf_resolves = Namespace(self.ONTOLOGY_URI + "resolves")
+            self.pf_option = Namespace(self.ONTOLOGY_URI + "hasOption")
+            self.pf_answer = Namespace(self.ONTOLOGY_URI + "hasAnswer")
+            self.pf_requires = Namespace(self.ONTOLOGY_URI + "requiresEntity")
+            self.pf_ans_prop = Namespace(self.ONTOLOGY_URI + "answerProperty")
+            self.pf_refers_to = Namespace(self.ONTOLOGY_URI + "refersTo")
+            self.pf_template = Namespace(self.ONTOLOGY_URI + "answerTemplate")
+            self.pf_ans_from = Namespace(self.ONTOLOGY_URI + "answerFrom")
+            self.pf_requires = Namespace(self.ONTOLOGY_URI + "requiresEntity")
+            # Setting path por kg
+            self.path = path
             self.grafo = rdflib.Graph()
-            self.grafo.parse(path, format="xml")
+            self.grafo.parse(self.path, format="xml")
         except Exception as e:
             print(e)
 
@@ -97,7 +110,7 @@ class KGHandler:
         index = uri.rfind(special_char)
         return uri[index + 1:len(uri)]
 
-    def build_answer(self, qres, ans_prop):
+    def build_answer_prop_val(self, qres, ans_prop):
         """
         This method builds a part of the answer, from the result of a SPARQL query.
         :param qres: The result from a SPARQL query.
@@ -106,29 +119,29 @@ class KGHandler:
 
         :return: A dict containing a property and a value from the query result.
 
-        .. todo:: handle multiple properties answer
         """
 
-        answer = []
         ans_prop = self.clean_uri(ans_prop)
         values = []
         for row in qres:
             values.append(str(row[0]))
-        answer.append({"property": ans_prop, "value": values})
+
+        answer = {"property": ans_prop, "value": values}
         return answer
 
-    def get_answer(self, intent):
+    def get_answer_properties(self, intent):
         """
-        This method retrieves the answer class from a SPAQL query.
+        This method retrieves the answer properties from an answer class using a SPARQL query.
         The answer has a series of properties that may or may not be present,
-        depending on the way the answer is configured
+        depending on the way the answer is configured.
+        If there are more than one properties of an answer, the will be stored in an array.
 
         :param intent: The intent from where the answer will be retrieved
 
         :return: returns the different properties found in the answer object.
+
         """
         intent = self._build_uri(intent)
-
         query = f"""SELECT ?property ?refers ?template ?from ?entity
                           WHERE {{
                                   <{intent}> <{self.pf_answer}> ?answer .
@@ -149,22 +162,99 @@ class KGHandler:
                                   }}
                       }}"""
         qres = self.grafo.query(query)
-        if len(qres) >= 1:
+        ans_prop = None
+        refers_to = None
+        template = None
+        ans_from = None
+        entity = None
+        ans_prop_list = []
+        if len(qres) == 1:
             for row in qres:
-                # print(row)
                 ans_prop, refers_to, template, ans_from, entity = row
-                break
-            return ans_prop, refers_to, template, ans_from, entity
+
+        elif len(qres) > 1:
+            for row in qres:
+                ans_prop, refers_to, template, ans_from, entity = row
+                ans_prop_list.append(ans_prop)
+
+        return ans_prop, refers_to, template, ans_from, entity, ans_prop_list
+
+    def get_answer_parts(self, ans_prop, refers_to, ans_from, entity, entities):
+        """
+        This method searches for the real values of the answer of the intent.
+        Depending on the different properties found in the answer object.
+        The answer can be from a direct object, or an indirect object or, from a related object.
+
+        :param ans_prop: A property to retrieve from an object
+
+        :param refers_to: A related object to obtain a value using ans_prop
+
+        :param ans_from: An object to obtain a value using ans_prop
+
+        :param entity: A direct entity to be used in the answer
+
+        :param entities: A list of auxiliary entities
+
+        :return: The a pair of property an value that conforms an answer.
+        """
+        ans_prop = Namespace(ans_prop)
+        if ans_from is not None:
+            # print("Direct answer")
+            ans_from = Namespace(ans_from)
+            if refers_to is not None:
+                # print("Referred Answer")
+                refers_to = Namespace(refers_to)
+                # print(refers_to)
+                query = f"""SELECT ?answer  WHERE {{
+                                            <{ans_from}> <{refers_to}> ?related .
+                                            ?related <{ans_prop}> ?answer.
+                                                           }}"""
+            else:
+                # print("Not referred Answer")
+                query = f"""SELECT ?answer WHERE {{
+                                            <{ans_from}> <{ans_prop}> ?answer
+                                                            }}"""
+
+        else:
+            # print("Not direct answer")
+            entity_value = None
+            for entity_iter in entities:
+                aux_type = entity_iter["type"]
+                if aux_type == entity:
+                    entity_value = entity_iter["value"]
+                    break
+
+            if entity_value is not None:
+                entity_value = Namespace(entity_value)
+                if refers_to is None:
+                    # print("Not referred answer")
+                    query = f"""SELECT ?answer WHERE {{
+                                                    <{entity_value}> <{ans_prop}> ?answer
+                                                               }}"""
+
+                else:
+                    # print("Referred answer")
+                    refers_to = Namespace(refers_to)
+                    query = f"""SELECT ?answer WHERE {{
+                                                <{entity_value}> <{refers_to}>  ?related .
+                                                ?related <{ans_prop}> ?answer .
+                                            }}"""
+            else:
+                return None
+
+        qres = self.grafo.query(query)
+        answer = self.build_answer_prop_val(qres, ans_prop)
+        return answer
 
     def get_intent_answer(self, intent, entities_aux):
         """
         This method returns the full answer from a intent.
-        Depending on the different properties found in the answer object.
-        The answer can be from a direct object, or an indirect object or, from a related object.
+        Using and other method (get_answer_properties) to retrieve the different properties of an Answer Object.
+        And other method (get_answer_parts) to build the key value of properties of an Entity.
 
         :param intent: The intent from where the answer will be retrieved
 
-        :param entities: A list of entities, that can be collected in different ways from other components.
+        :param entities_aux: A list of entities, that can be collected in different ways from other components.
 
         :return: The full answer in a dictionary displayed in this way:
             {
@@ -182,55 +272,14 @@ class KGHandler:
                 "type": self._build_uri(entity["type"]),
                 "value": self._build_uri(entity["value"])
             })
-        ans_prop, refers_to, template, ans_from, entity = self.get_answer(intent)
-
-        ans_prop = Namespace(ans_prop)
-        if ans_from is not None:
-            # print("Direct answer")
-            ans_from = Namespace(ans_from)
-            if refers_to is not None:
-                # print("Referred Answer")
-                refers_to = Namespace(refers_to)
-                # print(refers_to)
-                query = f"""SELECT ?answer  WHERE {{
-                                    <{ans_from}> <{refers_to}> ?related .
-                                    ?related <{ans_prop}> ?answer.
-                                                   }}"""
-            else:
-                # print("Not referred Answer")
-                query = f"""SELECT ?answer WHERE {{
-                                    <{ans_from}> <{ans_prop}> ?answer
-                                                    }}"""
-
+        ans_prop, refers_to, template, ans_from, entity, ans_prop_list = self.get_answer_properties(intent)
+        answer = []
+        if len(ans_prop_list) == 0:
+            answer.append(self.get_answer_parts(ans_prop, refers_to, ans_from, entity, entities))
         else:
-            # print("Not direct answer")
-            entity_value = None
-            for entity_iter in entities:
-                aux_type = entity_iter["type"]
-                if aux_type == entity:
-                    entity_value = entity_iter["value"]
-                    break
+            for ans_prop in ans_prop_list:
+                answer.append(self.get_answer_parts(ans_prop, refers_to, ans_from, entity, entities))
 
-            if entity_value is not None:
-                entity_value = Namespace(entity_value)
-                if refers_to is None:
-                    # print("Not referred answer")
-                    query = f"""SELECT ?answer WHERE {{
-                                            <{entity_value}> <{ans_prop}> ?answer
-                                                       }}"""
-
-                else:
-                    # print("Referred answer")
-                    refers_to = Namespace(refers_to)
-                    query = f"""SELECT ?answer WHERE {{
-                                        <{entity_value}> <{refers_to}>  ?related .
-                                        ?related <{ans_prop}> ?answer .
-                                    }}"""
-            else:
-                return None
-
-        qres = self.grafo.query(query)
-        answer = self.build_answer(qres, ans_prop)
         return {"answer": answer, "template": str(template)}
 
     def get_intent_options(self, intent):
