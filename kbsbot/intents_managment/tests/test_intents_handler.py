@@ -5,7 +5,7 @@ from kbsbot.intents_managment.knowledge_graph import KGHandler
 class IntentsHandlerTest(TestCase):
     def setUp(self):
         base_url = "http://127.0.0.1"
-        path = "C:\\Users\\andre\\Documents\\PythonTutos\\cb-intents-management-ms\\kbsbot\\intents_managment\\kg.rdf"
+        path = "../kg.rdf"
         self.kg = KGHandler(base_url, path)
 
     def test_not_direct_answer(self):
