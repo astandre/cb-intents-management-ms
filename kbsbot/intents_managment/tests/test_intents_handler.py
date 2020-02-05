@@ -1,14 +1,11 @@
 from unittest import TestCase
 from kbsbot.intents_managment.knowledge_graph import KGHandler
-import os
 
 
 class IntentsHandlerTest(TestCase):
     def setUp(self):
         base_url = "http://127.0.0.1"
         path = "kbsbot/intents_managment/kg.rdf"
-        # base_url = os.environ.get("BASE_URL")
-        # path = os.environ.get("KG_URL")
         self.kg = KGHandler(base_url, path)
 
     def test_not_direct_answer(self):
@@ -89,3 +86,10 @@ class IntentsHandlerTest(TestCase):
         self.assertGreater(len(result["options"]), 0)
         result = self.kg.get_entity_options("Course")
         self.assertEqual(len(result["options"]), 0)
+
+    def test_get_rq(self):
+        result = self.kg.get_resolution_question("http://127.0.0.1/ockb/resources/ObtenerInformacion",
+                                                 "http://127.0.0.1/ockb/course/ontology/Course")
+        self.assertIn("intent", result)
+        self.assertIn("entity", result)
+        self.assertIn("entity", result)

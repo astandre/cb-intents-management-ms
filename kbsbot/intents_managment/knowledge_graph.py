@@ -23,6 +23,10 @@ class KGHandler:
     pf_template = ""
     pf_ans_from = ""
     pf_requires = ""
+    agent_desc = ""
+    has_intent = ""
+    intent_desc = ""
+    intent_name = ""
     RESOURCE_URI = ""
     ONTOLOGY_URI = ""
 
@@ -43,6 +47,10 @@ class KGHandler:
             self.pf_template = Namespace(self.ONTOLOGY_URI + "answerTemplate")
             self.pf_ans_from = Namespace(self.ONTOLOGY_URI + "answerFrom")
             self.pf_requires = Namespace(self.ONTOLOGY_URI + "requiresEntity")
+            self.agent_desc = Namespace(self.ONTOLOGY_URI + "agentDescription")
+            self.has_intent = Namespace(self.ONTOLOGY_URI + "hasIntent")
+            self.intent_desc = Namespace(self.ONTOLOGY_URI + "intentDescription")
+            self.intent_name = Namespace(self.ONTOLOGY_URI + "intentName")
             # Setting path por kg
             self.path = path
             self.grafo = rdflib.Graph()
@@ -337,7 +345,7 @@ class KGHandler:
         query = f"""SELECT ?option_thing ?option                               
                           WHERE {{                                                    
                                   ?option_thing  <{RDF.type}>  <{entity}> .            
-                                  ?option_thing <{RDFS.label}> ?option  .                                                    
+                                  ?option_thing <{RDFS.label}> ?option  .     
                       }}"""
         q_res = self.grafo.query(query)
 
@@ -345,6 +353,82 @@ class KGHandler:
         for row in q_res:
             payload, option = row
             if option is not None and payload is not None:
-                options.append({"option": option, "payload": payload})
+                options.append({"option": str(option), "payload": payload})
 
         return {"entity": str(entity), "options": options}
+
+    def find_entity_type(self, entity):
+        entity_type = None
+        entity = self._build_uri(entity, resource=True)
+        # print(entity)
+        query = f"""SELECT ?entity_type                               
+                                  WHERE {{                                                    
+                                          <{entity}>  <{RDF.type}> ?entity_type  .                                                                
+                              }}"""
+
+        q_res = self.grafo.query(query)
+        for row in q_res:
+            entity_type = row[0]
+            break
+        return {"value": str(entity), "type": str(entity_type)}
+
+    def find_agent_intents(self, agent):
+        """
+        This method returns information about the chatbot, like name, description and intents.
+
+            :param agent: A valid agent name
+
+        """
+        agent = self._build_uri(agent, resource=True)
+        query = f"""SELECT  ?name ?description ?ag_des
+                                     WHERE {{                                                    
+                                             <{agent}>  <{self.has_intent}> ?intent . 
+                                             ?intent  <{self.intent_name}> ?name . 
+                                             ?intent  <{self.intent_desc}> ?description . 
+                            OPTIONAL {{
+                                   <{agent}>  <{self.agent_desc}> ?ag_des .
+                                  }}
+                                 }}"""
+
+        q_res = self.grafo.query(query)
+        agent_desc = None
+        agent_intents = []
+        for row in q_res:
+            # print(row)
+            intent_name, intent_des, agent_desc_temp = row
+            agent_intents.append({"intent": str(intent_name), "description": str(intent_des)})
+            if agent_desc is None:
+                agent_desc = str(agent_desc_temp)
+        return {"agent": str(agent), "description": agent_desc, "intents": agent_intents}
+
+    def get_resolution_question(self, intent, entity):
+        """
+        This method finds the resolution question of an intent and entity
+        :param intent: A valid intent name
+
+        :param entity: A valid entity name
+
+        :return: A dict with the intent, entity and the resolution question
+        """
+        intent = self._build_uri(intent, resource=True)
+        entity = self._build_uri(entity, resource=False)
+
+        query = f"""SELECT ?question 
+                               WHERE {{
+                                       <{intent}> <{self.pf_has_rq}> ?rq .
+                                       ?rq <{self.pf_resolves}> <{entity}> .
+                                       ?rq <{self.pf_question}> ?question .
+                              }}          
+                """
+
+        q_res = self.grafo.query(query)
+        rq = None
+        for row in q_res:
+            # print(row)
+            rq = row[0]
+            break
+        return {"intent": str(intent), "entity": str(entity), "rq": str(rq)}
+
+# base_url = "http://127.0.0.1"
+# path = "C:\\Users\\andre\\Documents\\PythonTutos\\cb-intents-management-ms\\kbsbot\\intents_managment\\kg.rdf"
+# kg = KGHandler(base_url, path)

@@ -27,3 +27,7 @@ These are the main methods of this class:
 .. autofunction:: knowledge_graph.KGHandler.get_intent_options
 
 .. autofunction:: knowledge_graph.KGHandler.get_entity_options
+
+.. autofunction:: knowledge_graph.KGHandler.find_agent_intents
+
+.. autofunction:: knowledge_graph.KGHandler.get_resolution_question

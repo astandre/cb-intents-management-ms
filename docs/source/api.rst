@@ -11,3 +11,7 @@ Here we have the different views of the app.
 .. autofunction:: views.intents.intent_options
 
 .. autofunction:: views.intents.entity_options
+
+.. autofunction:: views.intents.agent_info
+
+.. autofunction:: views.intents.intent_rq

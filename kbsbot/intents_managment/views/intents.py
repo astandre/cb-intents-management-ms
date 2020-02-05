@@ -5,11 +5,8 @@ import os
 
 intents = JsonBlueprint("intents", __name__)
 
-
-# if os.environ.get("DEBUG"):
-#     base_url = "http://127.0.0.1"
-#     path = "C:\\Users\\andre\\Documents\\PythonTutos\\cb-intents-management-ms\\kbsbot\\intents_managment\\kg.rdf"
-# else:
+# base_url = "http://127.0.0.1"
+# path = "C:\\Users\\andre\\Documents\\PythonTutos\\cb-intents-management-ms\\kbsbot\\intents_managment\\kg.rdf"
 base_url = os.environ.get("BASE_URL")
 path = os.environ.get("KG_URL")
 
@@ -94,3 +91,36 @@ def entity_options():
         return entities
     else:
         return {"message": "Entity not valid", "status": 404}
+
+
+@intents.route("/agent/info", methods=["GET"])
+def agent_info():
+    """
+    This method returns the info about the chatbot
+
+    :return: a dict containing the name of the chatbot, the description, and all the intents of the chatbot
+
+    """
+
+    data = request.get_json()
+    if "agent" in data:
+        return kg.find_agent_intents(data["agent"])
+    else:
+        return {"message": "Must provide an agent", "status": 404}
+
+
+@intents.route("/intent/rq", methods=["GET"])
+def intent_rq():
+    """
+    This method finds the resolution question of an intent and entity
+
+    :return: A dict with the intent, entity and the resolution question
+
+    """
+
+    data = request.get_json()
+    if "intent" in data and "entity" in data:
+        return kg.get_resolution_question(data["intent"], data["entity"])
+    else:
+        return {"message": "Must provide an intent and an entity", "status": 404}
+
