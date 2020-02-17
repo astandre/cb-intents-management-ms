@@ -13,6 +13,11 @@ path = os.environ.get("KG_URL")
 kg = KGHandler(base_url, path)
 
 
+@intents.route('/status', methods=["GET"])
+def get_status():
+    return {"message": "ok"}
+
+
 @intents.route("/intent/requires", methods=["GET"])
 def intent_requires():
     """
@@ -123,4 +128,3 @@ def intent_rq():
         return kg.get_resolution_question(data["intent"], data["entity"])
     else:
         return {"message": "Must provide an intent and an entity", "status": 404}
-
